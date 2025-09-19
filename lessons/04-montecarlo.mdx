@@ -1,0 +1,26 @@
+import Quiz from '../components/Quiz'
+
+# Monte Carlo Simülasyonu
+
+**Monte Carlo Simülasyonu**, projedeki belirsizlikleri modellemek için çok sayıda rastgele senaryo çalıştırır.  
+Bu sayede NPV ve IRR gibi göstergelerin olasılık dağılımları elde edilir.
+
+---
+
+## Örnek
+Gelir artış oranı için %5 ± %2 standart sapma ile 1.000 tekrar yapılır.  
+Sonuç: NPV'nin %70 olasılıkla pozitif olduğu görülür.
+
+---
+
+## Quiz
+
+<Quiz 
+  question="Monte Carlo simülasyonu hangi durumda kullanılır?" 
+  options={[
+    "Kesin ve risksiz projelerde",
+    "Belirsizlik ve risk analizi gerektiğinde",
+    "Projeyi hızlandırmak için"
+  ]}
+  correctIndex={1}
+/>

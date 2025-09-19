@@ -1,0 +1,32 @@
+import Quiz from '../components/Quiz'
+
+# Finansman ve Borç Amortismanı
+
+Projeler genellikle hem özsermaye hem de borç ile finanse edilir.  
+Borç geri ödemeleri anapara ve faizden oluşur. Yatırımcı için önemli olan, borç servisini karşılayacak nakit akımlarının bulunmasıdır.
+
+**Proje IRR (Project IRR)**, tüm yatırımın getirisini ölçerken  
+**Özsermaye IRR (Equity IRR)**, sadece özkaynak yatırımcısının getirisini ölçer.
+
+---
+
+## Örnek
+Toplam yatırım: 100 M TL  
+- %50 özsermaye → 50 M TL  
+- %50 borç → 50 M TL, %10 faiz oranı, 5 yıl vade
+
+Borç ödeme planı yıllık eşit taksitlerle yapılır.
+
+---
+
+## Quiz
+
+<Quiz 
+  question="Özsermaye IRR ile Proje IRR arasındaki temel fark nedir?" 
+  options={[
+    "Biri nakit akımlarını, diğeri vergileri ölçer",
+    "Biri tüm yatırımın, diğeri sadece özkaynağın getirisini ölçer",
+    "Hiçbir fark yoktur"
+  ]}
+  correctIndex={1}
+/>
