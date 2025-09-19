@@ -1,0 +1,33 @@
+import Quiz from '../components/Quiz'
+
+# Net Bugünkü Değer (NPV) ve İç Verim Oranı (IRR)
+
+**Net Bugünkü Değer (NPV)**, bir yatırımın gelecekteki nakit akımlarının bugünkü değerlerinin toplamıdır. Eğer NPV > 0 ise yatırım kârlı kabul edilir.
+
+**İç Verim Oranı (IRR)**, NPV'yi sıfıra getiren iskonto oranıdır. Yani projenin kârlılık eşiğini gösterir.
+
+---
+
+## Örnek
+Bir yatırımın:
+- Başlangıç maliyeti: 100 M TL
+- 1. yıl nakit akımı: 60 M TL
+- 2. yıl nakit akımı: 60 M TL
+
+İskonto oranı %10 ise, NPV şu şekilde hesaplanır:
+
+NPV = -100 + 60/1.1 + 60/1.1^2 ≈ 9,09 M TL
+
+---
+
+## Quiz
+
+<Quiz 
+  question="Bir yatırımın NPV'si negatif çıkarsa ne anlama gelir?" 
+  options={[
+    "Yatırım kârlı",
+    "Yatırım zararlı",
+    "Yatırım risksiz"
+  ]}
+  correctIndex={1}
+/>
