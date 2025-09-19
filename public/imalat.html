@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İmalat Sanayi Projesi - Finansal Model</title>
+    
+    <!-- CDN Links - Çalışan versiyonlar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://unpkg.com/docx@7.6.0/build/index.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.15);
+        }
+
+        .card h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #495057;
+            flex: 1;
+        }
+
+        input {
+            width: 150px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: right;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+        }
+
+        input[readonly] {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(40,167,69,0.3);
+        }
+
+        .result-card.negative {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .result-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .result-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .chart-wrapper {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .chart-wrapper h4 {
+            text-align: center;
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: 300px !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .loading {
+            display: none;
+            color: #007bff;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .exchange-rates {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-message {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            input {
+                width: 120px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>İmalat Sanayi Projesi - Finansal Model</h1>
+        
+        <div class="exchange-rates">
+            <strong>Döviz Kurları:</strong>
+            <label>USD/TL: <input type="number" id="usdRate" value="34.50" step="0.01" style="width: 80px;"></label>
+            <label>EUR/TL: <input type="number" id="eurRate" value="37.20" step="0.01" style="width: 80px;"></label>
+        </div>
+
+        <div class="grid">
+            <!-- Proje Bilgileri -->
+            <div class="card">
+                <h3>Proje Bilgileri</h3>
+                <div class="row">
+                    <label>Proje Adı:</label>
+                    <input type="text" id="projectName" value="Örnek İmalat Projesi">
+                </div>
+                <div class="row">
+                    <label>Proje Süresi (yıl):</label>
+                    <input type="number" id="projectLife" value="15">
+                </div>
+                <div class="row">
+                    <label>İlk Kapasite (%):</label>
+                    <input type="number" id="initialCapacity" value="70">
+                </div>
+                <div class="row">
+                    <label>Tam Kapasite Yılı:</label>
+                    <input type="number" id="fullCapacityYear" value="3">
+                </div>
+            </div>
+
+            <!-- Sabit Yatırım -->
+            <div class="card">
+                <h3>Sabit Yatırım (Milyon TL)</h3>
+                <div class="row">
+                    <label>Arsa:</label>
+                    <input type="number" id="landCost" value="15" step="0.1">
+                </div>
+                <div class="row">
+                    <label>Bina:</label>
+                    <input type="number" id="buildingCost" value="25" step="0.1">
+                </div>
+                <div class="row">
+                    <label>Makine:</label>
+                    <input type="number" id="machineryCost" value="60" step="0.1">
+                </div>
+                <div class="row">
+                    <label>Taşıma & Sigorta:</label>
+                    <input type="number" id="transportCost" value="3" step="0.1">
+                </div>
+                <div class="row">
+                    <label>İthalat & Gümrük:</label>
+                    <input type="number" id="importCost" value="8" step="0.1">
+                </div>
+                <div class="row">
+                    <label>Genel Giderler:</label>
+                    <input type="number" id="generalCost" value="4" step="0.1">
+                </div>
+                <div class="row">
+                    <label>Beklenmeyen (%):</label>
+                    <input type="number" id="contingency" value="5" step="0.1">
+                </div>
+                <div class="row" style="border-top: 2px solid #007bff; padding-top: 15px; margin-top: 15px;">
+                    <label><strong>Toplam Sabit Yatırım:</strong></label>
+                    <input type="number" id="totalFixed" readonly>
+                </div>
+            </div>
+
+            <!-- İşletme Giderleri -->
+            <div class="card">
+                <h3>İşletme Giderleri (Milyon TL/yıl)</h3>
+                <div class="row">
+                    <label>Hammadde:</label>
+                    <input type="number" id="rawMaterials" value="45">
+                </div>
+                <div class="row">
+                    <label>Yardımcı Madde:</label>
+                    <input type="number" id="auxiliaryMaterials" value="8">
+                </div>
+                <div class="row">
+                    <label>İşletme Malzemeleri:</label>
+                    <input type="number" id="operatingMaterials" value="3">
+                </div>
+                <div class="row">
+                    <label>İşçilik:</label>
+                    <input type="number" id="labor" value="18">
+                </div>
+                <div class="row">
+                    <label>Enerji:</label>
+                    <input type="number" id="energy" value="12">
+                </div>
+                <div class="row">
+                    <label>Diğer Giderler:</label>
+                    <input type="number" id="otherExpenses" value="3">
+                </div>
+                <div class="row" style="border-top: 2px solid #007bff; padding-top: 15px; margin-top: 15px;">
+                    <label><strong>Toplam İşletme Gideri:</strong></label>
+                    <input type="number" id="totalOperating" readonly>
+                </div>
+            </div>
+
+            <!-- Finansman -->
+            <div class="card">
+                <h3>İşletme Sermayesi & Finansman</h3>
+                <div class="row">
+                    <label>İşl. Sermaye (%):</label>
+                    <input type="number" id="workingCapitalPercent" value="25">
+                </div>
+                <div class="row">
+                    <label>İşl. Sermaye (Milyon TL):</label>
+                    <input type="number" id="workingCapital" readonly>
+                </div>
+                <div class="row">
+                    <label>Özsermaye Oranı (%):</label>
+                    <input type="number" id="equityRatio" value="40">
+                </div>
+                <div class="row">
+                    <label>Borç Maliyeti (%):</label>
+                    <input type="number" id="debtCost" value="25">
+                </div>
+                <div class="row">
+                    <label>Borç Vadesi (yıl):</label>
+                    <input type="number" id="debtTerm" value="10">
+                </div>
+                <div class="row">
+                    <label>Kurumlar Vergisi (%):</label>
+                    <input type="number" id="taxRate" value="25">
+                </div>
+            </div>
+
+            <!-- Ürün Gelirleri -->
+            <div class="card">
+                <h3>Ürün Gelirleri</h3>
+                <div class="row">
+                    <label>Ürün 1 - Birim Fiyat (TL):</label>
+                    <input type="number" id="product1Price" value="125">
+                </div>
+                <div class="row">
+                    <label>Ürün 1 - Yıllık Miktar:</label>
+                    <input type="number" id="product1Quantity" value="650000">
+                </div>
+                <div class="row">
+                    <label>Ürün 2 - Birim Fiyat (TL):</label>
+                    <input type="number" id="product2Price" value="80">
+                </div>
+                <div class="row">
+                    <label>Ürün 2 - Yıllık Miktar:</label>
+                    <input type="number" id="product2Quantity" value="300000">
+                </div>
+                <div class="row">
+                    <label>Ürün 3 - Birim Fiyat (TL):</label>
+                    <input type="number" id="product3Price" value="200">
+                </div>
+                <div class="row">
+                    <label>Ürün 3 - Yıllık Miktar:</label>
+                    <input type="number" id="product3Quantity" value="150000">
+                </div>
+                <div class="row" style="border-top: 2px solid #007bff; padding-top: 15px; margin-top: 15px;">
+                    <label><strong>Toplam Yıllık Gelir (M TL):</strong></label>
+                    <input type="number" id="totalRevenue" readonly>
+                </div>
+                <div class="row">
+                    <label>Toplam (Milyon USD):</label>
+                    <input type="number" id="totalRevenueUSD" readonly>
+                </div>
+                <div class="row">
+                    <label>Toplam (Milyon EUR):</label>
+                    <input type="number" id="totalRevenueEUR" readonly>
+                </div>
+            </div>
+
+            <!-- Büyüme Parametreleri -->
+            <div class="card">
+                <h3>Büyüme & Değerleme Parametreleri</h3>
+                <div class="row">
+                    <label>Gelir Artış Oranı (%):</label>
+                    <input type="number" id="revenueGrowth" value="15">
+                </div>
+                <div class="row">
+                    <label>Maliyet Enflasyonu (%):</label>
+                    <input type="number" id="costInflation" value="18">
+                </div>
+                <div class="row">
+                    <label>İndirgeme Oranı (%):</label>
+                    <input type="number" id="discountRate" value="20">
+                </div>
+                <div class="row">
+                    <label>Terminal Değer Çarpanı:</label>
+                    <input type="number" id="terminalMultiple" value="5">
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-primary" onclick="calculateModel()">Modeli Hesapla</button>
+            <button class="btn-success" onclick="exportToWord()" id="exportBtn">Rapor İndir</button>
+        </div>
+
+        <div class="status-message">
+            <strong>Kullanım:</strong> Önce "Modeli Hesapla" butonuna basın, sonuçları inceleyin ve "Word İndir" ile raporu alın.
+        </div>
+
+        <div class="loading" id="loading">Hesaplanıyor...</div>
+
+        <div id="resultsSection" style="display: none;">
+            <div id="sensitivitySection" style="margin-top:40px; display:none;">
+                <h2 style="color:#2c3e50; margin-bottom:15px;">📊 Duyarlılık Analizi</h2>
+                <table id="sensitivityTable" style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                    <thead>
+                        <tr style="background:#34495e; color:white;">
+                            <th>Senaryo</th>
+                            <th>NPV (M TL)</th>
+                            <th>IRR (%)</th>
+                            <th>Payback (yıl)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="chart-wrapper">
+                    <h4>Senaryolara Göre NPV</h4>
+                    <canvas id="sensitivityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="results" id="results"></div>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h4>Serbest Nakit Akımı (Milyon TL)</h4>
+                    <canvas id="cashflowChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h4>Kümülatif Nakit Akımı (Milyon TL)</h4>
+                    <canvas id="cumulativeChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h4>Yatırım Dağılımı</h4>
+                    <canvas id="investmentChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h4>Gelir vs Gider (Milyon TL)</h4>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <table id="cashflowTable">
+                <thead>
+                    <tr>
+                        <th>Yıl</th>
+                        <th>Gelir (M TL)</th>
+                        <th>Gider (M TL)</th>
+                        <th>EBITDA (M TL)</th>
+                        <th>NCF (M TL)</th>
+                        <th>Kümülatif (M TL)</th>
+                    </tr>
+                </thead>
+                <tbody id="cashflowBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let cashflowData = [];
+        let charts = {};
+
+        
+        // Sensitivity Analysis
+        function runSensitivityAnalysis(inputs) {
+            const scenarios = [];
+            
+            // Baz Senaryo
+            scenarios.push({ 
+                name: "Baz Senaryo", 
+                metrics: calculateMetrics(calculateCashflows(inputs), inputs) 
+            });
+            
+            // Gelir +%10
+            const plusRevenue = { ...inputs, totalRevenue: inputs.totalRevenue * 1.1 };
+            scenarios.push({ 
+                name: "Gelir +%10", 
+                metrics: calculateMetrics(calculateCashflows(plusRevenue), plusRevenue) 
+            });
+            
+            // Gelir -%10
+            const minusRevenue = { ...inputs, totalRevenue: inputs.totalRevenue * 0.9 };
+            scenarios.push({ 
+                name: "Gelir -%10", 
+                metrics: calculateMetrics(calculateCashflows(minusRevenue), minusRevenue) 
+            });
+            
+            // Gider +%10
+            const plusCost = { ...inputs, totalOperating: inputs.totalOperating * 1.1 };
+            scenarios.push({ 
+                name: "Gider +%10", 
+                metrics: calculateMetrics(calculateCashflows(plusCost), plusCost) 
+            });
+            
+            // Gider -%10
+            const minusCost = { ...inputs, totalOperating: inputs.totalOperating * 0.9 };
+            scenarios.push({ 
+                name: "Gider -%10", 
+                metrics: calculateMetrics(calculateCashflows(minusCost), minusCost) 
+            });
+            
+            return scenarios;
+        }
+
+        // Get input value safely
+        function getValue(id) {
+            const element = document.getElementById(id);
+            const value = parseFloat(element.value) || 0;
+            return value;
+        }
+
+        // Set input value
+        function setValue(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.value = value.toFixed(2);
+            }
+        }
+
+        // Update calculated fields
+        function updateCalculations() {
+            // Fixed Investment
+            const land = getValue('landCost');
+            const building = getValue('buildingCost');
+            const machinery = getValue('machineryCost');
+            const transport = getValue('transportCost');
+            const importCost = getValue('importCost');
+            const general = getValue('generalCost');
+            const contingencyRate = getValue('contingency') / 100;
+            
+            const subtotal = land + building + machinery + transport + importCost + general;
+            const totalFixed = subtotal * (1 + contingencyRate);
+            setValue('totalFixed', totalFixed);
+
+            // Operating Expenses
+            const raw = getValue('rawMaterials');
+            const auxiliary = getValue('auxiliaryMaterials');
+            const operating = getValue('operatingMaterials');
+            const labor = getValue('labor');
+            const energy = getValue('energy');
+            const other = getValue('otherExpenses');
+            
+            const totalOperating = raw + auxiliary + operating + labor + energy + other;
+            setValue('totalOperating', totalOperating);
+
+            // Working Capital
+            const wcPercent = getValue('workingCapitalPercent') / 100;
+            const workingCapital = totalOperating * wcPercent;
+            setValue('workingCapital', workingCapital);
+
+            // Revenue
+            const p1Price = getValue('product1Price');
+            const p1Quantity = getValue('product1Quantity');
+            const p2Price = getValue('product2Price');
+            const p2Quantity = getValue('product2Quantity');
+            const p3Price = getValue('product3Price');
+            const p3Quantity = getValue('product3Quantity');
+            
+            const totalRevenue = (p1Price * p1Quantity + p2Price * p2Quantity + p3Price * p3Quantity) / 1000000;
+            setValue('totalRevenue', totalRevenue);
+
+            // Currency conversions
+            const usdRate = getValue('usdRate') || 34.5;
+            const eurRate = getValue('eurRate') || 37.2;
+            setValue('totalRevenueUSD', totalRevenue / usdRate);
+            setValue('totalRevenueEUR', totalRevenue / eurRate);
+        }
+
+        // Calculate financial model
+        function calculateModel() {
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+
+            setTimeout(() => {
+                try {
+                    updateCalculations();
+
+                    const inputs = {
+                        projectLife: getValue('projectLife'),
+                        initialCapacity: getValue('initialCapacity') / 100,
+                        fullCapacityYear: getValue('fullCapacityYear'),
+                        totalFixed: getValue('totalFixed'),
+                        totalOperating: getValue('totalOperating'),
+                        workingCapital: getValue('workingCapital'),
+                        totalRevenue: getValue('totalRevenue'),
+                        revenueGrowth: getValue('revenueGrowth') / 100,
+                        costInflation: getValue('costInflation') / 100,
+                        equityRatio: getValue('equityRatio') / 100,
+                        debtCost: getValue('debtCost') / 100,
+                        debtTerm: getValue('debtTerm'),
+                        taxRate: getValue('taxRate') / 100,
+                        discountRate: getValue('discountRate') / 100,
+                        terminalMultiple: getValue('terminalMultiple')
+                    };
+
+                    cashflowData = calculateCashflows(inputs);
+                    const metrics = calculateMetrics(cashflowData, inputs);
+                    
+                    displayResults(metrics);
+                    createCharts();
+                    createTable();
+                    
+                    // Sensitivity Analysis
+                    const sensitivityResults = runSensitivityAnalysis(inputs);
+                    displaySensitivity(sensitivityResults);
+                    createSensitivityChart(sensitivityResults);
+                    
+                    document.getElementById('resultsSection').style.display = 'block';
+                    
+                } catch (error) {
+                    alert('Hesaplama hatası: ' + error.message);
+                    console.error(error);
+                } finally {
+                    loading.classList.remove('show');
+                }
+            }, 500);
+        }
+
+        // Calculate cashflows - DÜZELTME: Doğru ölçekli hesaplama
+        function calculateCashflows(inputs) {
+            const cashflows = [];
+            const totalInvestment = inputs.totalFixed + inputs.workingCapital;
+            const debt = totalInvestment * (1 - inputs.equityRatio);
+            
+            let annualDebtPayment = 0;
+            if (debt > 0 && inputs.debtCost > 0) {
+                annualDebtPayment = (debt * inputs.debtCost) / (1 - Math.pow(1 + inputs.debtCost, -inputs.debtTerm));
+            }
+            
+            const depreciation = inputs.totalFixed / inputs.projectLife;
+            let remainingDebt = debt;
+
+            // Year 0
+            cashflows.push({
+                year: 0,
+                revenue: 0,
+                operatingExpense: 0,
+                ebitda: 0,
+                depreciation: 0,
+                ebit: 0,
+                interest: 0,
+                tax: 0,
+                netIncome: 0,
+                freeCashFlow: -totalInvestment,
+                cumulativeCashFlow: -totalInvestment,
+                debtBalance: remainingDebt
+            });
+
+            // Operating years
+            for (let year = 1; year <= inputs.projectLife; year++) {
+                let capacity = inputs.initialCapacity;
+                if (year <= inputs.fullCapacityYear) {
+                    capacity = inputs.initialCapacity + ((1 - inputs.initialCapacity) * (year - 1) / Math.max(1, inputs.fullCapacityYear - 1));
+                } else {
+                    capacity = 1;
+                }
+
+                const revenue = inputs.totalRevenue * capacity * Math.pow(1 + inputs.revenueGrowth, year - 1);
+                const operatingExpense = inputs.totalOperating * capacity * Math.pow(1 + inputs.costInflation, year - 1);
+                const ebitda = revenue - operatingExpense;
+                const ebit = ebitda - depreciation;
+                const interest = remainingDebt * inputs.debtCost;
+                const taxableIncome = Math.max(0, ebit - interest);
+                const tax = taxableIncome * inputs.taxRate;
+                const netIncome = ebit - interest - tax;
+                
+                const principal = year <= inputs.debtTerm ? Math.max(0, annualDebtPayment - interest) : 0;
+                remainingDebt = Math.max(0, remainingDebt - principal);
+                
+                let terminalValue = 0;
+                if (year === inputs.projectLife) {
+                    terminalValue = ebitda * inputs.terminalMultiple + inputs.workingCapital;
+                }
+                
+                const freeCashFlow = netIncome + depreciation - principal + terminalValue;
+                const cumulativeCashFlow = cashflows[year - 1].cumulativeCashFlow + freeCashFlow;
+
+                cashflows.push({
+                    year,
+                    revenue,
+                    operatingExpense,
+                    ebitda,
+                    depreciation,
+                    ebit,
+                    interest,
+                    tax,
+                    netIncome,
+                    freeCashFlow,
+                    cumulativeCashFlow,
+                    debtBalance: remainingDebt
+                });
+            }
+
+            return cashflows;
+        }
+
+        // Calculate financial metrics - DÜZELTME: IRR algoritması
+        function calculateMetrics(cashflows, inputs) {
+            // NPV
+            let npv = 0;
+            for (let i = 0; i < cashflows.length; i++) {
+                npv += cashflows[i].freeCashFlow / Math.pow(1 + inputs.discountRate, i);
+            }
+
+            // IRR - Newton-Raphson method
+            let irr = 0.15;
+            const tolerance = 0.0001;
+            const maxIterations = 50;
+
+            for (let iteration = 0; iteration < maxIterations; iteration++) {
+                let f = 0;
+                let df = 0;
+                
+                for (let i = 0; i < cashflows.length; i++) {
+                    const cf = cashflows[i].freeCashFlow;
+                    const factor = Math.pow(1 + irr, i);
+                    f += cf / factor;
+                    if (i > 0) {
+                        df -= i * cf / (factor * (1 + irr));
+                    }
+                }
+
+                if (Math.abs(f) < tolerance) break;
+                
+                if (Math.abs(df) > tolerance) {
+                    const newIrr = irr - f / df;
+                    if (newIrr > -0.99 && newIrr < 5) {
+                        irr = newIrr;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            // Payback period
+            let payback = inputs.projectLife;
+            for (let i = 1; i < cashflows.length; i++) {
+                if (cashflows[i].cumulativeCashFlow >= 0) {
+                    const prevCum = Math.abs(cashflows[i - 1].cumulativeCashFlow);
+                    const currentCF = cashflows[i].freeCashFlow;
+                    payback = i - 1 + (currentCF > 0 ? prevCum / currentCF : 0);
+                    break;
+                }
+            }
+
+            return { npv, irr, payback };
+        }
+
+        // Display results - DÜZELTME: Renk kodlaması
+        function displayResults(metrics) {
+            const resultsDiv = document.getElementById('results');
+            
+            const npvClass = metrics.npv > 0 ? '' : ' negative';
+            const irrClass = metrics.irr > 0.15 ? '' : ' negative';
+            const paybackClass = metrics.payback < 7 ? '' : ' negative';
+            
+            resultsDiv.innerHTML = `
+                <div class="result-card${npvClass}">
+                    <h4>NPV</h4>
+                    <div class="value">${metrics.npv.toFixed(1)} M TL</div>
+                </div>
+                <div class="result-card${irrClass}">
+                    <h4>IRR</h4>
+                    <div class="value">${(metrics.irr * 100).toFixed(1)}%</div>
+                </div>
+                <div class="result-card${paybackClass}">
+                    <h4>Payback</h4>
+                    <div class="value">${metrics.payback.toFixed(1)} yıl</div>
+                </div>
+            `;
+        }
+
+        // Create charts - DÜZELTME: Pasta grafikte yüzde gösterimi
+        function createCharts() {
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+
+            const labels = cashflowData.map(d => d.year.toString());
+
+            // Payback hesapla
+            const metrics = calculateMetrics(cashflowData, {
+                discountRate: getValue('discountRate') / 100,
+                projectLife: getValue('projectLife')
+            });
+            const paybackYear = Math.round(metrics.payback);
+
+            // 1. Cashflow Chart - Bar + marker
+            const cashflowCtx = document.getElementById('cashflowChart').getContext('2d');
+            charts.cashflow = new Chart(cashflowCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Serbest Nakit Akımı (M TL)',
+                        data: cashflowData.map(d => d.freeCashFlow),
+                        backgroundColor: cashflowData.map((d, i) => {
+                            if (i === 0) return '#dc3545';
+                            return d.freeCashFlow >= 0 ? '#28a745' : '#ffc107';
+                        }),
+                        borderColor: '#333',
+                        borderWidth: 1
+                    },
+                    {
+                        type: 'scatter',
+                        label: 'Payback',
+                        data: labels.map((l,i)=> i===paybackYear ? {x:l, y:cashflowData[i].freeCashFlow} : null).filter(Boolean),
+                        pointBackgroundColor: 'red',
+                        pointRadius: 8,
+                        showLine: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' M TL';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Milyon TL' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Yıl' }
+                        }
+                    }
+                }
+            });
+
+            // 2. Cumulative Chart - Line + marker
+            const cumulativeCtx = document.getElementById('cumulativeChart').getContext('2d');
+            charts.cumulative = new Chart(cumulativeCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Kümülatif Nakit Akımı (M TL)',
+                        data: cashflowData.map(d => d.cumulativeCashFlow),
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#007bff',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4
+                    },
+                    {
+                        type: 'scatter',
+                        label: 'Payback',
+                        data: [{x: paybackYear.toString(), y: cashflowData[paybackYear].cumulativeCashFlow}],
+                        pointBackgroundColor: 'red',
+                        pointRadius: 8,
+                        showLine: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' M TL';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Milyon TL' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Yıl' }
+                        }
+                    }
+                }
+            });
+
+            // 3. Investment Distribution - Doughnut with percentages
+            const investmentCtx = document.getElementById('investmentChart').getContext('2d');
+            const investmentData = [
+                getValue('landCost'),
+                getValue('buildingCost'),
+                getValue('machineryCost'),
+                getValue('transportCost'),
+                getValue('importCost'),
+                getValue('generalCost')
+            ];
+            
+            const investmentLabels = ['Arsa', 'Bina', 'Makine', 'Taşıma', 'İthalat', 'Genel'];
+            const total = investmentData.reduce((a, b) => a + b, 0);
+            
+            charts.investment = new Chart(investmentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: investmentLabels,
+                    datasets: [{
+                        data: investmentData,
+                        backgroundColor: [
+                            '#ff6384',
+                            '#36a2eb', 
+                            '#ffce56',
+                            '#4bc0c0',
+                            '#9966ff',
+                            '#ff9f40'
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    return data.labels.map((label, index) => {
+                                        const value = data.datasets[0].data[index];
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
+                                        return {
+                                            text: `${label}: ${value.toFixed(1)}M TL (${percentage}%)`,
+                                            fillStyle: data.datasets[0].backgroundColor[index],
+                                            index: index
+                                        };
+                                    });
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
+                                    return `${context.label}: ${value.toFixed(1)} M TL (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 4. Revenue vs Expense Chart - Line
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            charts.revenue = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: labels.slice(1),
+                    datasets: [{
+                        label: 'Gelir',
+                        data: cashflowData.slice(1).map(d => d.revenue),
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#28a745'
+                    }, {
+                        label: 'Gider',
+                        data: cashflowData.slice(1).map(d => d.operatingExpense),
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#dc3545'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} M TL`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Milyon TL' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Yıl' }
+                        }
+                    }
+                }
+            });
+        }
+
+        
+        function displaySensitivity(results) {
+            const tbody = document.querySelector("#sensitivityTable tbody");
+            tbody.innerHTML = "";
+            results.forEach(s => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.metrics.npv.toFixed(1)}</td>
+                    <td>${(s.metrics.irr * 100).toFixed(1)}</td>
+                    <td>${s.metrics.payback.toFixed(1)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById("sensitivitySection").style.display = "block";
+        }
+
+        function createSensitivityChart(results) {
+            const ctx = document.getElementById("sensitivityChart").getContext("2d");
+            if (charts.sensitivity) charts.sensitivity.destroy();
+            charts.sensitivity = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: results.map(r => r.name),
+                    datasets: [{
+                        label: "NPV (M TL)",
+                        data: results.map(r => r.metrics.npv),
+                        backgroundColor: [
+                            "#3498db",
+                            "#2ecc71",
+                            "#e74c3c",
+                            "#f39c12",
+                            "#9b59b6"
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toFixed(1) + " M TL";
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: "Milyon TL" }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create cashflow table
+        function createTable() {
+            const tbody = document.getElementById('cashflowBody');
+            tbody.innerHTML = '';
+            
+            cashflowData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${row.year}</strong></td>
+                    <td>${row.revenue.toFixed(1)}</td>
+                    <td>${row.operatingExpense.toFixed(1)}</td>
+                    <td>${row.ebitda.toFixed(1)}</td>
+                    <td><strong>${row.freeCashFlow.toFixed(1)}</strong></td>
+                    <td><strong>${row.cumulativeCashFlow.toFixed(1)}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Export to Word function - DÜZELTME: Kütüphane kontrolü ve fallback
+        async function exportToWord() {
+            const exportBtn = document.getElementById('exportBtn');
+            const loading = document.getElementById('loading');
+            
+            try {
+                exportBtn.disabled = true;
+                loading.classList.add('show');
+                loading.textContent = 'Word raporu hazırlanıyor...';
+
+                if (!cashflowData || cashflowData.length === 0) {
+                    alert('Lütfen önce "Modeli Hesapla" butonuna basın!');
+                    return;
+                }
+
+                // Kütüphane kontrolü - farklı yolları dene
+                let docxLib = null;
+                if (typeof window.docx !== 'undefined') {
+                    docxLib = window.docx;
+                } else if (typeof docx !== 'undefined') {
+                    docxLib = docx;
+                } else {
+                    // Son çare: global scope'da ara
+                    if (window.Document && window.Packer && window.Paragraph) {
+                        docxLib = {
+                            Document: window.Document,
+                            Packer: window.Packer,
+                            Paragraph: window.Paragraph,
+                            Table: window.Table,
+                            TableRow: window.TableRow,
+                            TableCell: window.TableCell,
+                            WidthType: window.WidthType,
+                            HeadingLevel: window.HeadingLevel,
+                            ImageRun: window.ImageRun
+                        };
+                    }
+                }
+
+                if (!docxLib) {
+                    // Alternatif: Basit HTML raporu oluştur
+                    createHTMLReport();
+                    return;
+                }
+
+                const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, HeadingLevel, ImageRun } = docxLib;
+
+                const sections = [];
+
+                // Başlık ve özet
+                sections.push(
+                    new Paragraph({ text: 'İMALAT SANAYİ PROJESİ', heading: HeadingLevel.TITLE }),
+                    new Paragraph({ text: 'Finansal Değerlendirme Raporu', heading: HeadingLevel.TITLE }),
+                    new Paragraph({ text: '' }),
+                    new Paragraph({ text: `Proje: ${document.getElementById('projectName').value}` }),
+                    new Paragraph({ text: `Tarih: ${new Date().toLocaleDateString('tr-TR')}` }),
+                    new Paragraph({ text: `Proje Süresi: ${getValue('projectLife')} yıl` }),
+                    new Paragraph({ text: '' })
+                );
+
+                // Finansal özet
+                sections.push(
+                    new Paragraph({ text: 'FİNANSAL ÖZET', heading: HeadingLevel.HEADING_1 }),
+                    new Paragraph({ text: `Toplam Sabit Yatırım: ${getValue('totalFixed').toFixed(1)} Milyon TL` }),
+                    new Paragraph({ text: `Yıllık Gelir Kapasitesi: ${getValue('totalRevenue').toFixed(1)} Milyon TL` }),
+                    new Paragraph({ text: `İşletme Giderleri: ${getValue('totalOperating').toFixed(1)} Milyon TL` }),
+                    new Paragraph({ text: `Özsermaye Oranı: %${getValue('equityRatio')}` }),
+                    new Paragraph({ text: '' })
+                );
+
+                // Ana finansal göstergeler
+                const metrics = calculateMetrics(cashflowData, {
+                    discountRate: getValue('discountRate') / 100,
+                    projectLife: getValue('projectLife')
+                });
+
+                sections.push(
+                    new Paragraph({ text: 'ANA FİNANSAL GÖSTERGELER', heading: HeadingLevel.HEADING_1 }),
+                    new Paragraph({ text: `Net Bugünkü Değer (NPV): ${metrics.npv.toFixed(1)} Milyon TL` }),
+                    new Paragraph({ text: `İç Verimlilik Oranı (IRR): %${(metrics.irr * 100).toFixed(1)}` }),
+                    new Paragraph({ text: `Geri Ödeme Süresi (Payback): ${metrics.payback.toFixed(1)} yıl` }),
+                    new Paragraph({ text: '' })
+                );
+
+                // Grafikleri ekle - her biri için try-catch
+                const chartIds = ['cashflowChart', 'cumulativeChart', 'investmentChart', 'revenueChart'];
+                const chartTitles = [
+                    'SERBEST NAKİT AKIMI ANALİZİ',
+                    'KÜMÜLATİF NAKİT AKIMI',
+                    'YATIRIM DAĞILIMI',
+                    'GELİR VE GİDER KARŞILAŞTIRMASI'
+                ];
+
+                for (let i = 0; i < chartIds.length; i++) {
+                    try {
+                        const canvas = document.getElementById(chartIds[i]);
+                        if (canvas && canvas.getContext) {
+                            // Chart'ın tam render edilmesini bekle
+                            await new Promise(resolve => setTimeout(resolve, 800));
+                            
+                            const dataURL = canvas.toDataURL('image/png', 0.8);
+                            const base64Data = dataURL.split(',')[1];
+                            
+                            if (base64Data && base64Data.length > 100) {
+                                const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+                                
+                                sections.push(
+                                    new Paragraph({ text: chartTitles[i], heading: HeadingLevel.HEADING_1 }),
+                                    new Paragraph({
+                                        children: [new ImageRun({
+                                            data: imageBytes,
+                                            transformation: { width: 450, height: 280 }
+                                        })]
+                                    }),
+                                    new Paragraph({ text: '' })
+                                );
+                            } else {
+                                sections.push(
+                                    new Paragraph({ text: chartTitles[i], heading: HeadingLevel.HEADING_1 }),
+                                    new Paragraph({ text: 'Grafik verisi alınamadı.' })
+                                );
+                            }
+                        }
+                    } catch (chartError) {
+                        console.warn(`Chart ${chartIds[i]} export error:`, chartError);
+                        sections.push(
+                            new Paragraph({ text: chartTitles[i], heading: HeadingLevel.HEADING_1 }),
+                            new Paragraph({ text: 'Grafik yüklenemedi.' })
+                        );
+                    }
+                }
+
+                // Nakit akım tablosu
+                sections.push(new Paragraph({ text: 'DETAYLI NAKİT AKIMI TABLOSU', heading: HeadingLevel.HEADING_1 }));
+                
+                const tableHeaders = ['Yıl', 'Gelir (M TL)', 'Gider (M TL)', 'EBITDA (M TL)', 'NCF (M TL)', 'Kümülatif (M TL)'];
+                const headerCells = tableHeaders.map(header => 
+                    new TableCell({ 
+                        children: [new Paragraph({ text: header })],
+                        width: { size: 16, type: WidthType.PERCENTAGE }
+                    })
+                );
+
+                const tableRows = [new TableRow({ children: headerCells })];
+
+                cashflowData.forEach(row => {
+                    const cells = [
+                        new TableCell({ children: [new Paragraph({ text: row.year.toString() })] }),
+                        new TableCell({ children: [new Paragraph({ text: row.revenue.toFixed(1) })] }),
+                        new TableCell({ children: [new Paragraph({ text: row.operatingExpense.toFixed(1) })] }),
+                        new TableCell({ children: [new Paragraph({ text: row.ebitda.toFixed(1) })] }),
+                        new TableCell({ children: [new Paragraph({ text: row.freeCashFlow.toFixed(1) })] }),
+                        new TableCell({ children: [new Paragraph({ text: row.cumulativeCashFlow.toFixed(1) })] })
+                    ];
+                    tableRows.push(new TableRow({ children: cells }));
+                });
+
+                const table = new Table({
+                    rows: tableRows,
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+
+                sections.push(table);
+
+                // Sonuç
+                sections.push(
+                    new Paragraph({ text: '' }),
+                    new Paragraph({ text: 'SONUÇ VE ÖNERİLER', heading: HeadingLevel.HEADING_1 }),
+                    new Paragraph({ text: 'Bu finansal model projenin ekonomik uygunluğunu değerlendirmek amacıyla hazırlanmıştır.' }),
+                    new Paragraph({ text: 'Sonuçlar mevcut varsayımlar çerçevesinde hesaplanmış olup, farklı senaryo analizleri yapılması önerilir.' }),
+                    new Paragraph({ text: 'Risk değerlendirmesi için duyarlılık analizi ve Monte Carlo simülasyonu düşünülebilir.' })
+                );
+
+                // Dokümanı oluştur
+                const doc = new Document({
+                    sections: [{ 
+                        properties: {
+                            page: {
+                                margin: { top: 720, right: 720, bottom: 720, left: 720 }
+                            }
+                        },
+                        children: sections 
+                    }]
+                });
+
+                const blob = await Packer.toBlob(doc);
+                const fileName = `Imalat_Projesi_Raporu_${new Date().getTime()}.docx`;
+
+                // İndir
+                if (typeof saveAs !== 'undefined') {
+                    saveAs(blob, fileName);
+                } else {
+                    // Manuel indirme
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+
+                alert('✅ Word raporu başarıyla oluşturuldu ve indiriliyor!');
+
+            } catch (error) {
+                console.error('Word export error:', error);
+                alert('Word raporu oluşturulamadı. HTML raporu oluşturuluyor...');
+                createHTMLReport();
+            } finally {
+                exportBtn.disabled = false;
+                loading.classList.remove('show');
+                loading.textContent = 'Hesaplanıyor...';
+            }
+        }
+
+        // Alternatif HTML raporu oluştur
+        function createHTMLReport() {
+            const metrics = calculateMetrics(cashflowData, {
+                discountRate: getValue('discountRate') / 100,
+                projectLife: getValue('projectLife')
+            });
+
+            // Grafiklerin Base64 olarak alınması
+            function getChartImage(id) {
+                try {
+                    const canvas = document.getElementById(id);
+                    if (canvas) {
+                        return canvas.toDataURL('image/png', 0.8);
+                    }
+                } catch (e) {
+                    console.warn('Grafik alınamadı:', id, e);
+                }
+                return null;
+            }
+
+            const charts = {
+                cashflow: getChartImage('cashflowChart'),
+                cumulative: getChartImage('cumulativeChart'),
+                investment: getChartImage('investmentChart'),
+                revenue: getChartImage('revenueChart')
+            };
+
+            let htmlContent = `
+            <!DOCTYPE html>
+            <html lang="tr">
+            <head>
+                <meta charset="UTF-8">
+                <title>İmalat Sanayi Projesi - Finansal Rapor</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                    h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+                    h2 { color: #34495e; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; }
+                    .summary { background: #ecf0f1; padding: 20px; border-radius: 5px; margin: 20px 0; }
+                    .metrics { display: flex; gap: 20px; margin: 20px 0; }
+                    .metric { background: #3498db; color: white; padding: 15px; border-radius: 5px; text-align: center; flex: 1; }
+                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                    th, td { border: 1px solid #bdc3c7; padding: 8px; text-align: center; }
+                    th { background: #34495e; color: white; }
+                    .charts img { display: block; margin: 20px auto; max-width: 90%; border: 1px solid #ccc; }
+                    .chart-note { color: #7f8c8d; font-style: italic; margin: 10px 0; }
+                </style>
+            </head>
+            <body>
+                <h1>İMALAT SANAYİ PROJESİ</h1>
+                <h2>Finansal Değerlendirme Raporu</h2>
+                
+                <div class="summary">
+                    <h3>Proje Bilgileri</h3>
+                    <p><strong>Proje Adı:</strong> ${document.getElementById('projectName').value}</p>
+                    <p><strong>Rapor Tarihi:</strong> ${new Date().toLocaleDateString('tr-TR')}</p>
+                    <p><strong>Proje Süresi:</strong> ${getValue('projectLife')} yıl</p>
+                </div>
+
+                <div class="metrics">
+                    <div class="metric">
+                        <h4>NPV</h4>
+                        <div>${metrics.npv.toFixed(1)} M TL</div>
+                    </div>
+                    <div class="metric">
+                        <h4>IRR</h4>
+                        <div>${(metrics.irr * 100).toFixed(1)}%</div>
+                    </div>
+                    <div class="metric">
+                        <h4>Payback</h4>
+                        <div>${metrics.payback.toFixed(1)} yıl</div>
+                    </div>
+                </div>
+
+                <h2>Finansal Özet</h2>
+                <table>
+                    <tr><th>Kalem</th><th>Tutar (Milyon TL)</th></tr>
+                    <tr><td>Toplam Sabit Yatırım</td><td>${getValue('totalFixed').toFixed(1)}</td></tr>
+                    <tr><td>Yıllık Gelir Kapasitesi</td><td>${getValue('totalRevenue').toFixed(1)}</td></tr>
+                    <tr><td>Yıllık İşletme Giderleri</td><td>${getValue('totalOperating').toFixed(1)}</td></tr>
+                    <tr><td>İşletme Sermayesi</td><td>${getValue('workingCapital').toFixed(1)}</td></tr>
+                </table>
+
+                <h2>Nakit Akımı Tablosu</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Yıl</th><th>Gelir (M TL)</th><th>Gider (M TL)</th>
+                            <th>EBITDA (M TL)</th><th>NCF (M TL)</th><th>Kümülatif (M TL)</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            cashflowData.forEach(row => {
+                htmlContent += `
+                    <tr>
+                        <td><strong>${row.year}</strong></td>
+                        <td>${row.revenue.toFixed(1)}</td>
+                        <td>${row.operatingExpense.toFixed(1)}</td>
+                        <td>${row.ebitda.toFixed(1)}</td>
+                        <td><strong>${row.freeCashFlow.toFixed(1)}</strong></td>
+                        <td><strong>${row.cumulativeCashFlow.toFixed(1)}</strong></td>
+                    </tr>`;
+            });
+
+            htmlContent += `
+                    </tbody>
+                </table>
+
+                <div class="charts">
+                    <h2>Grafikler</h2>
+                    ${charts.cashflow ? `<h3>Serbest Nakit Akımı</h3><img src="${charts.cashflow}"/>` : ''}
+                    ${charts.cumulative ? `<h3>Kümülatif Nakit Akımı</h3><img src="${charts.cumulative}"/>` : ''}
+                    ${charts.investment ? `<h3>Yatırım Dağılımı</h3><img src="${charts.investment}"/>` : ''}
+                    ${charts.revenue ? `<h3>Gelir vs Gider</h3><img src="${charts.revenue}"/>` : ''}
+                </div>
+
+                
+                <h2>Duyarlılık Analizi</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Senaryo</th><th>NPV (M TL)</th><th>IRR (%)</th><th>Payback (yıl)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${runSensitivityAnalysis({
+                            projectLife: getValue('projectLife'),
+                            initialCapacity: getValue('initialCapacity') / 100,
+                            fullCapacityYear: getValue('fullCapacityYear'),
+                            totalFixed: getValue('totalFixed'),
+                            totalOperating: getValue('totalOperating'),
+                            workingCapital: getValue('workingCapital'),
+                            totalRevenue: getValue('totalRevenue'),
+                            revenueGrowth: getValue('revenueGrowth') / 100,
+                            costInflation: getValue('costInflation') / 100,
+                            equityRatio: getValue('equityRatio') / 100,
+                            debtCost: getValue('debtCost') / 100,
+                            debtTerm: getValue('debtTerm'),
+                            taxRate: getValue('taxRate') / 100,
+                            discountRate: getValue('discountRate') / 100,
+                            terminalMultiple: getValue('terminalMultiple')
+                        }).map(s => `
+                            <tr>
+                                <td><strong>${s.name}</strong></td>
+                                <td>${s.metrics.npv.toFixed(1)}</td>
+                                <td>${(s.metrics.irr * 100).toFixed(1)}</td>
+                                <td>${s.metrics.payback.toFixed(1)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <h2>Sonuç</h2>
+
+                <p>Bu finansal model, ${document.getElementById('projectName').value} projesinin ekonomik uygunluğunu değerlendirmek amacıyla hazırlanmıştır.</p>
+                <p>Sonuçlar mevcut varsayımlar çerçevesinde hesaplanmış olup, farklı senaryo analizleri yapılması önerilir.</p>
+                
+                <p><em>Rapor Tarihi: ${new Date().toLocaleString('tr-TR')}</em></p>
+            </body>
+            </html>`;
+
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Imalat_Projesi_Raporu_${new Date().getTime()}.html`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('📄 HTML raporu oluşturuldu ve indiriliyor!');
+        }
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', updateCalculations);
+                input.addEventListener('change', updateCalculations);
+            });
+
+            updateCalculations();
+            console.log('İmalat Sanayi Modeli hazır! Kütüphaneler yüklendi:', {
+                chartjs: typeof Chart !== 'undefined',
+                docx: typeof window.docx !== 'undefined',
+                fileSaver: typeof saveAs !== 'undefined'
+            });
+        });
+
+        // Initial calculation
+        updateCalculations();
+    </script>
+</body>
+</html>
